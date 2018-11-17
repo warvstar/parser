@@ -1,0 +1,28 @@
+class S
+ a:i32 = 0
+ S:
+  print("S created")
+
+main:
+ s = S!
+ 1
+
+//virtual registers
+//S:
+//reg_1 = _S0
+//call print reg_1 //reg_1 could be changed in call, so save it into another register if need to use again
+
+//main:
+//call S
+//reg_0 = 1
+
+//x64 asm
+//S:
+//move rcx, _S0
+//call print
+
+//main:
+//call S
+//mov qword ptr [rip + "s"], rax
+//mov eax, 1
+//ret

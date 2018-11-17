@@ -1,0 +1,337 @@
+#include "mmap.h";
+#include "exe.h"
+size_t estimate_memory_size(size_t machine_code_size) {
+	size_t page_size_multiple = sysconf(_SC_PAGE_SIZE);     // Get the machine page size
+	size_t factor = 1, required_memory_size;
+
+	for (;;) {
+		required_memory_size = factor * page_size_multiple;
+		if (machine_code_size <= required_memory_size) break;
+		factor++;
+	}
+	return required_memory_size;
+}
+
+// Add the message size
+void append_message_size(std::vector<uint8_t> &machine_code, const std::string &hello_name) {
+	size_t message_size = hello_name.length();
+
+	machine_code[24] = (message_size & 0xFF) >> 0;
+	machine_code[25] = (message_size & 0xFF00) >> 8;
+	machine_code[26] = (message_size & 0xFF0000) >> 16;
+	machine_code[27] = (message_size & 0xFF000000) >> 24;
+}
+
+// Print the content of the machine_code vector for debugging purposes
+void show_machine_code(const std::vector<uint8_t> &machine_code) {
+	int konto = 0;
+	std::cout << "\nMachine code generated:\n";
+	std::cout << std::hex;
+	for (auto e : machine_code) {
+		std::cout << (int)e << " ";
+		konto++;
+		if (konto % 7 == 0) {
+			std::cout << '\n';
+		}
+	}
+	std::cout << std::dec;
+	std::cout << "\n\n";
+}
+void addToMachineCode(std::vector<std::string>& asm_code, std::vector<uint8_t>& mc) {
+	for (auto code : asm_code) {
+		std::string _string = "";
+		for (auto c : code) {
+			switch (c) {
+			case ' ':
+				break;
+			default:
+				_string += c;
+				break;
+			}
+		}
+		int got = code.find("mov");
+		if (got > 0) {
+			auto dest = code.substr(got + 1, 3);
+		}
+	}
+}
+std::vector<std::string> asm_code = { "mov ecx, 111", "lea rdx, [rip + \"??_C@_0CF@ODFHHPJI@This?5will?5be?5output?5to?5standard?5@\"]", "mov r8d, 36", "call write" };
+	
+	std::vector<uint8_t> machine_code {
+	#ifdef __linux__
+	0x48, 0xc7, 0xc0, 0x01, 0x00, 0x00, 0x00,           //Store the "write" system call number 0x01 for Linux
+	#elif __APPLE__
+	0x48, 0xc7, 0xc0, 0x04, 0x00, 0x00, 0x02,           //Store the "write" system call number 0x02000004 for macOS
+	#elif _WIN32
+	#endif
+	0x48, 0x83, 0xec, 0x28,
+	0xb9, 0x01, 0x00, 0x00, 0x00,          //Store stdin file descriptor 0x01
+	0x48, 0x8d, 0x15, 0x14, 0x00, 0x00, 0x00,
+	0x41, 0xb8, 0x04, 0x00, 0x00, 0x00,
+	0xe8, 0x00, 0x00, 0x00, 0x00,
+	0x89, 0x44, 0x24, 0x24,
+	//0x90,
+	0x48, 0x83, 0xc4, 0x28,
+	0xc3                                                //return instruction
+};
+
+/*addToMachineCode(asm_code, machine_code);
+_write(0, "This will be output to standard out\n", 36);
+// Get the user name
+std::string name;
+std::cout << "What is your name?\n";
+std::getline(std::cin, name);
+std::string hello_name = "Hello, " + name + "!\n";
+
+// Add the message size
+append_message_size(machine_code, hello_name);
+
+//Append the message to the machine code vector:
+for (auto c : hello_name) {
+	machine_code.push_back(c);
+}
+
+// Print the content of the machine_code vector for debugging purposes
+show_machine_code(machine_code);
+
+// Get the required memory size for mmap
+*/
+	machine_code = { 0xB8, 0x02, 0x00, 0x00, 0x00, 0xC3 };
+	machine_code = { 48, 83, 0xec, 28, 0xE8, 0x00, 0x00, 0x00, 0x00, 89, 44, 24, 24, 48, 83, 0xc4, 28, 0xC3 };
+	machine_code = { 0x55, 0x89, 0xE5, 0xE8, 0x00, 0x00, 0x00, 0x00, 0x5D, 0xC3 };
+	__asm {
+		push ebp
+		mov ebp, esp
+		call _test
+		pop ebp
+		ret
+	}
+size_t required_memory_size = machine_code.size();// estimate_memory_size(machine_code.size());
+uint8_t *mem = (uint8_t*)VirtualAlloc(0, required_memory_size, MEM_COMMIT, PAGE_READWRITE);
+//uint8_t *mem = (uint8_t*)mmap(NULL, required_memory_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+if (mem == MAP_FAILED) {
+	std::cerr << "Can't allocate memory\n"; std::exit(1);
+}
+
+memcpy(mem, machine_code.data(), machine_code.size());
+
+void(*func)();
+DWORD ignore;
+if (!VirtualProtect(mem, sizeof(machine_code), PAGE_EXECUTE_READ, &ignore)) {
+	return 3;
+}
+
+// Flush the instruction cache
+if (!FlushInstructionCache(GetCurrentProcess(), mem, sizeof(machine_code))) {
+	return 4;
+}
+// Cast the address of our generated code to a function pointer and call the function
+func = (void(*)()) mem;
+func();
+int(*fn)() = (int(*)()) mem;
+int result = fn();
+printf("result = 0x%x\n", result); 
+
+
+
+// Release the mapped memory
+munmap(mem, required_memory_size);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#include "interpreter.h"
+#include "Parser.h"
+#include <any>
+#include <functional>
+/*std::unordered_map<std::string, std::any> variables;
+template<typename Ret>
+struct AnyCallable
+{
+	AnyCallable() {}
+	template<typename F>
+	AnyCallable(F&& fun) : AnyCallable(std::function(fun)) {}
+	template<typename ... Args>
+	AnyCallable(std::function<Ret(Args...)> fun) : m_any(fun) {}
+	template<typename ... Args>
+	Ret operator()(Args&& ... args)
+	{
+		return std::invoke(std::any_cast<std::function<Ret(Args...)>>(m_any), std::forward<Args>(args)...);
+	}
+	std::any m_any;
+};
+
+template<>
+struct AnyCallable<void>
+{
+	AnyCallable() {}
+	template<typename F>
+	AnyCallable(F&& fun) : AnyCallable(std::function(fun)) {}
+	template<typename ... Args>
+	AnyCallable(std::function<void(Args...)> fun) : m_any(fun) {}
+	template<typename ... Args>
+	void operator()(Args&& ... args)
+	{
+		std::invoke(std::any_cast<std::function<void(Args...)>>(m_any), std::forward<Args>(args)...);
+	}
+	std::any m_any;
+};
+std::unordered_map<std::string, AnyCallable<void>> functions;
+void to_integer(const std::string& in, int& tt) {
+	tt = std::stoi(in);
+}
+void to_string(const int in, std::string& tt) {
+	tt = std::to_string(in);
+}
+enum Types {
+	NUMBER, STRING
+};
+enum Action {
+	NONE, EQUALS, ADD
+};*/
+Interpreter::Interpreter(Parsed& parsed) {
+	//skip this for now, more interested in jit and aot function
+	//s = s + to_string(i)
+	//or
+	//s = s + str(i)
+	//or
+	//s = s + _s(i)
+	//or
+	//s += _s(i)
+	/*functions["_s"] = &to_string;
+	auto t = UnparsedToken();
+	VariableToken to_interp = VariableToken(t);
+	to_interp.name = "s";
+	to_interp.type = "str";
+	to_interp.value.push_back("=");
+	to_interp.value.push_back("s");
+	to_interp.value.push_back("+");
+	to_interp.value.push_back("_s(i)");
+	variables["s"] = "test";
+	variables["i"] = 1;
+	variables["f"] = AnyCallable<std::any>();
+	auto type = variables["s"].type().hash_code();
+	auto var = variables[to_interp.name];
+	auto var_type = var.type().hash_code();
+	auto var_type2 = var.type().name();
+	auto var_type21 = var.type().raw_name();
+	Action action = NA;
+	if (var_type == 11) {
+
+	}
+	else if (var_type == 17648624087129316105) {
+		std::string o = std::any_cast<char const * __ptr64>(var);
+		std::string last = o;
+		for (auto v : to_interp.value) {
+			if (v == "=") {
+				action = EQUALS;
+			}
+			else if (v == "+") {
+				action = ADD;
+			}
+			else if (v == "+=") {
+				action = ADD;
+			}
+			else {
+				std::unordered_map<std::string, std::any>::iterator got;
+				std::unordered_map<std::string, AnyCallable<void>>::iterator got2;
+				got = variables.find(v);
+				std::string vv = "";
+				if (got == variables.end) {
+					got2 = functions.find(v);
+					std::any_cast<AnyCallable<void>>(got2->second)();
+				}
+				else {
+					vv = std::any_cast<std::string>(got->second);
+				}
+				if (action == ADD)
+					o = last + std::any_cast<std::string>(variables[v]) + std::any_cast<std::string>(variables[v]);
+			}
+		}
+	}
+	Types tt;
+	std::vector<AnyCallable<void>> list;
+	
+	if (type == 12215654530029034450) {
+		std::string tt;
+		functions["_s"](1, tt);
+		//variables["s"] = variables["s"] + variables["_s"] + ;
+	}
+
+	std::cout << variables["i"].type().name() << '\n';
+	std::cout << variables["v"].type().name() << '\n';
+	std::cout << variables["f"].type().name() << '\n';
+	auto result = std::any_cast<int>(variables["i"]) + std::any_cast<int>(variables["v"]);*/
+}

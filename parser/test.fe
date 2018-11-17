@@ -1,0 +1,38 @@
+class B extends A
+ some_int : int = 1
+ some_string:str="str"
+ some_untyped="str"
+ some_int_arr:int[]=[1,2]
+ some_func_void:void:
+  print("hi")
+ some_func_int:int:
+  v0 = 1 + 1
+  v = add(v0, getInt("1") + 1)
+  v
+ some_func_withargs(a_str:str):int:
+  return a_str.length!
+ __mul(other:vec3):
+ __mul(x:number,y:number,z:number):int
+
+
+v = add 1 1
+print2numbers(v,v)
+some_global_int = 1
+//a comment, also everything to the right and indented below function belongs to function
+some_global_function:void: print "test"
+some_global_function:v: print "test"
+some_global_function:i32: print "test"
+some_global_function:i32[10]: print "test"
+some_global_function(a_str:str):v: print "str = " + str
+
+//  v0 = 1 + 1
+// lua
+// name = "v0" value = "= 1 + 1"
+// cpp
+// name = "auto v0" value = "= 1 + 1;"
+
+//  v = add v0 v0
+// lua
+// name = "v" value = "= add(v0,v0)"
+// cpp
+// name = "auto v" value = "= add(v0,v0);"

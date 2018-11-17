@@ -1,0 +1,15 @@
+import {gl, window, Animal};
+
+pet = Animal!
+pet.name = "pet"
+pet.bark!
+pet.eat("apple")
+
+widnow = Window!
+
+update::
+ glClear(1,1,1,1)
+ widnow.swapBuffer!
+
+while(1)
+ update!

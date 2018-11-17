@@ -1,0 +1,26 @@
+import ffi
+lib = ffi("opengl32.dll")
+namespace gl
+ GL_ACCUM = 0x0100
+ glClear:void: = lib.get("glClear") //compiler should produce error if 
+
+export gl //exports everything in namespace gl
+
+//in c++ this would be imported like so
+//auto handle = dlopen("opengl32.dll");
+//typedef void(_fastcall *glClear_proto)();
+//glClear_proto glClear;
+//auto func = dlsym(handle, "glClear");
+//glClear = reinterpret_cast<glClear_proto>(func);
+//
+
+//in luajit this would be imported like so for loading a aot module
+//ffi = require("ffi")
+//lib = ffi.load("opengl32.dll")
+//ffi.cdef[[void glClear();]]
+//glClear = ffi.C.glClear
+
+
+//or if import is a jit module then
+
+//gl = require("gl")

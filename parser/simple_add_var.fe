@@ -1,0 +1,10 @@
+main(a:i32):
+ a = 1 + a
+
+
+//virtual registers
+//reg_0 = reg_1 + 1
+
+//x64 asm
+//lea eax, [rcx+1]
+//ret

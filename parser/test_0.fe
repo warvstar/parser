@@ -1,0 +1,17 @@
+//class Animal
+// a:i32 = 0
+// Animal:
+//  print("Created Animal!")
+
+a_global = 2
+
+main(some_number:i32):
+ //s = Animal!
+ print("Cool")
+ 1
+ a = 10
+ //a = a + rand! + 1
+ print(some_number, a_global, 22)
+ //a++
+ //b = some_number + a_global + 22;
+ 1 + 1

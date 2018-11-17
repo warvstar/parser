@@ -1,0 +1,22 @@
+test(lib:ffi, libName:str, funcName:str):i64:
+ lib.handle = dlopen(libName)
+ global_handle = dlopen(libName) + 1
+ dlsym(lib.handle, funcName, "test_string", 11)
+
+class ffi
+ handle:i64 = 1
+ ffi(libName:str):
+  handle = dlopen(libName)
+ get(funcName:str):i64:
+  dlsym(handle, funcName)
+
+entry:void:
+ lib = ffi("somelib")
+//print(lib.handle)
+//printOne:void: lib.get("printOne")
+//printOne!
+
+t(t2:str):i64:
+ 1 + 1
+
+global_handle = dlopen(libName) + 1

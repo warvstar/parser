@@ -1,0 +1,9 @@
+main:
+ 1 + 1
+
+//virtual registers
+//reg_0 = 2
+
+//x64 asm
+//mov eax, 2
+//ret
