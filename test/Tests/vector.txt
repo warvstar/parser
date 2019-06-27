@@ -1,0 +1,87 @@
+clib = ffi("msvcrt")
+print(string,u64):void = clib.get("printf")
+
+
+vector():vector:
+ data = allocc(4)
+ size = 0
+ capacity = 4
+
+tarr:
+ int_vector:i64[] = i64[1,2]
+ int_vector:i64
+
+printvector(v:vector):void:
+ for (i in 0:+2:v.size)
+
+for (i in 0:v.size)
+//same as
+for (int i = 0; i < v.size; ++i)
+
+for (i in 0:+2:v.size)
+//same as
+for (int i = 0; i < v.size; i+=2)
+
+for (i in 10:-2:v.size)
+//same as
+for (int i = 10; i > v.size; i-=2)
+
+tarr()
+
+add(a:f32, b:f32):f32:
+ a + b
+
+//test this
+getstring:
+ s = "thisisatest"
+ s
+
+v = vector()
+
+vector$push(v:vector*, val:u8):void:
+ v.data[v.size++] = val
+
+vector$get(v:vector*, val:u8):i8:
+ return v.data[val]
+
+vector$set(v:vector*, val:u8, idx:u8):void:
+ v.data[val] = idx
+
+vector$push(v:vector*, val:u8):void:
+ v.data[v.size++] = val
+
+v.push(11)
+v.get(0)
+v.set(0,1)
+v.get(0)
+v.data[0] = 22
+v.get(0)
+
+tt(v)
+testv(v)
+malloc(u64):u64 = clib.get("malloc")
+v:vector = malloc(8)
+
+v.data[0]
+print("test:%ju\n", v.data[0])
+v.size = 21
+testv(v)
+v
+v.size = 22
+print("test:%ju\n", v.size)
+v
+testv(v)
+
+vector$add(v:vector*, val:u8):void:
+ v.data[0] = val
+
+print("test:%ju\n", v.size)
+bb = 22222222222222222
+print("test:%ju\n", bb)
+
+
+clib = ffi("msvcrt")
+print(string,u64):void = clib.get("printf")
+malloc(u64):u64 = clib.get("malloc")
+bb = 22222222222222222
+print("test:%ju\n", bb)

@@ -1,0 +1,116 @@
+class Map
+ n_buckets:u32 = 0
+ size:u32 = 0
+ n_occupied:u32 = 0
+ upper_bound:u32 = 0
+ flags:u32 = 0
+ keys:u64[] = u64[0]
+ vals:u64 = 0
+ resize(amount:u32):i32:
+  1
+ set(what:string, val:u64):void:
+  x:u32 = 0
+  if (n_occupied >= upper_bound)
+   if (n_buckets > (size<<1))
+    if (resize(n_buckets - 1) < 0)
+     *ret = -1; return n_buckets
+   else if (resize(n_buckets + 1) < 0)
+    *ret = -1; return n_buckets
+  k:u32 = 0
+  i:u32 = key & mask
+  site:u32 = 0
+  last:u32 = 0
+  mask:u32 = n_buckets - 1
+  step:u32 = 0
+  x = site = n_buckets
+  if (((h->flags[i >> 4] >> ((i & 0xfU) << 1)) & 2))
+   x = i
+  else														
+   last = i; 
+   while (!((h->flags[i >> 4] >> ((i & 0xfU) << 1)) & 2) && (((h->flags[i >> 4] >> ((i & 0xfU) << 1)) & 1) || !((h->keys[i]) == (key))))
+    if (((h->flags[i >> 4] >> ((i & 0xfU) << 1)) & 1))
+	 site = i
+	i = (i + (++step)) & mask;
+	if (i == last)
+	 x = site
+	 break
+   if (x == h->n_buckets)
+    if (((h->flags[i >> 4] >> ((i & 0xfU) << 1)) & 2) && site != h->n_buckets)
+     x = site
+    else
+     x = i;											
+
+func(n:u32):u32:
+ if (1 > (n<<1))
+  return 1
+ 2
+
+#t(s) s
+
+func:
+ t(1)
+
+
+class Map
+ n_buckets:u32 = 0
+ size:u32 = 0
+ n_occupied:u32 = 0
+ upper_bound:u32 = 0
+ flags:void = 0
+ keys:u64 = 0
+ vals:u64 = 0
+ resize(amount:u32):i32:
+  1
+ set(what:string, val:u64):void:
+  key:u64 = 0
+  x:u32 = 0
+  if (n_occupied >= upper_bound)
+   if (n_buckets > (size<<1))
+    if (resize(n_buckets - 1) < 0)
+     *ret = -1; return n_buckets
+   else if (resize(n_buckets + 1) < 0)
+    *ret = -1; return n_buckets
+  k:u32 = 0
+  site:u32 = 0
+  last:u32 = 0
+  mask:u32 = n_buckets - 1
+  i:u32 = key & mask
+  step:u32 = 0
+  x = site = n_buckets
+  if (((flags[i >> 4] >> ((i & 0xfU) << 1)) & 2))
+   x = i
+  else														
+   last = i; 
+  
+test_array:
+ int_vector:i64[] = i64[1,2,1,1]
+ 
+int_vector = [1,2,1,1]
+int_vector:i64[] = [1,2,1,1]
+int_vector:i64[1,2,1,1]
+int_vector = i64[1,2,1,1]
+
+int_vector = [1,2,1,1]
+//c
+int_vector = i64$;
+int_vector.data[0] = 1;
+int_vector.data[1] = 2;
+int_vector.data[2] = 1;
+int_vector.data[3] = 1;
+
+if (v.second.isArray) {
+	out += "_array* ";
+	auto got = vm.class_defs.find(out);
+	if (got != vm.class_defs.end()) {
+
+	}
+	else {
+		class_def vector_def;
+		vector_def.name = out;
+		vector_def.variables["size"] = { BasicType::u64, "u64", uint64_t(0) };
+		vector_def.variables["capacity"] = { BasicType::u64, "u64", uint64_t(0) };
+		vector_def.variables["data"] = v.second; //i8*
+		vm.class_defs[out] = vector_def;
+		vm.reserved_keywords[out] = SymbolType::Type;
+	}
+}

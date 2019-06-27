@@ -7,9 +7,9 @@ pet.eat("apple")
 
 widnow = Window!
 
-update::
+update {
  glClear(1,1,1,1)
  widnow.swapBuffer!
-
+ }
 while(1)
  update!

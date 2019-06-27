@@ -1,0 +1,7 @@
+class Animal
+ age = 1
+ talk:
+  2
+
+func2:
+ 2

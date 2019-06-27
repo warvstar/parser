@@ -1,0 +1,10 @@
+class Animal
+ age:u8 = 1
+
+Animal():Animal:
+ age = age + 2
+
+
+TEST("animal test", "vector")
+ a = Animal()
+ expect(a.age).toBe(3)

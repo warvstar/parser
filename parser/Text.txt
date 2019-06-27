@@ -1,337 +1,477 @@
-#include "mmap.h";
-#include "exe.h"
-size_t estimate_memory_size(size_t machine_code_size) {
-	size_t page_size_multiple = sysconf(_SC_PAGE_SIZE);     // Get the machine page size
-	size_t factor = 1, required_memory_size;
+lib = ffi("Dll2")
+add2(i32,i32):i32 = lib.get("AddI")
+f = add2(12,12)
 
-	for (;;) {
-		required_memory_size = factor * page_size_multiple;
-		if (machine_code_size <= required_memory_size) break;
-		factor++;
-	}
-	return required_memory_size;
+
+lib = ffi("Dll2")
+add2(i32,i32):i32 = lib.get("AddI")
+add2(u8,u8):i32 = lib.get("AddI")
+f = add2(1,1)
+
+lib = ffi("Dll2")
+add2(i32):i32 = lib.get("AddI")
+f = add2(2)
+
+
+for v in array
+    print(v)
+
+for v in array
+    print(v)
+end
+
+printOne: print(1)
+
+or
+
+printOne:
+    print(1)
+
+
+printOne:
+    print(1)
+    print(2) <- this is in outer scope
+
+if only one statement, then braces not needed, else it is 
+
+printOne: {
+    print(1)
+    print(2)
 }
 
-// Add the message size
-void append_message_size(std::vector<uint8_t> &machine_code, const std::string &hello_name) {
-	size_t message_size = hello_name.length();
-
-	machine_code[24] = (message_size & 0xFF) >> 0;
-	machine_code[25] = (message_size & 0xFF00) >> 8;
-	machine_code[26] = (message_size & 0xFF0000) >> 16;
-	machine_code[27] = (message_size & 0xFF000000) >> 24;
-}
-
-// Print the content of the machine_code vector for debugging purposes
-void show_machine_code(const std::vector<uint8_t> &machine_code) {
-	int konto = 0;
-	std::cout << "\nMachine code generated:\n";
-	std::cout << std::hex;
-	for (auto e : machine_code) {
-		std::cout << (int)e << " ";
-		konto++;
-		if (konto % 7 == 0) {
-			std::cout << '\n';
-		}
-	}
-	std::cout << std::dec;
-	std::cout << "\n\n";
-}
-void addToMachineCode(std::vector<std::string>& asm_code, std::vector<uint8_t>& mc) {
-	for (auto code : asm_code) {
-		std::string _string = "";
-		for (auto c : code) {
-			switch (c) {
-			case ' ':
-				break;
-			default:
-				_string += c;
-				break;
-			}
-		}
-		int got = code.find("mov");
-		if (got > 0) {
-			auto dest = code.substr(got + 1, 3);
-		}
-	}
-}
-std::vector<std::string> asm_code = { "mov ecx, 111", "lea rdx, [rip + \"??_C@_0CF@ODFHHPJI@This?5will?5be?5output?5to?5standard?5@\"]", "mov r8d, 36", "call write" };
-	
-	std::vector<uint8_t> machine_code {
-	#ifdef __linux__
-	0x48, 0xc7, 0xc0, 0x01, 0x00, 0x00, 0x00,           //Store the "write" system call number 0x01 for Linux
-	#elif __APPLE__
-	0x48, 0xc7, 0xc0, 0x04, 0x00, 0x00, 0x02,           //Store the "write" system call number 0x02000004 for macOS
-	#elif _WIN32
-	#endif
-	0x48, 0x83, 0xec, 0x28,
-	0xb9, 0x01, 0x00, 0x00, 0x00,          //Store stdin file descriptor 0x01
-	0x48, 0x8d, 0x15, 0x14, 0x00, 0x00, 0x00,
-	0x41, 0xb8, 0x04, 0x00, 0x00, 0x00,
-	0xe8, 0x00, 0x00, 0x00, 0x00,
-	0x89, 0x44, 0x24, 0x24,
-	//0x90,
-	0x48, 0x83, 0xc4, 0x28,
-	0xc3                                                //return instruction
-};
+func:
+ if (1)
+  2
+ 1
 
-/*addToMachineCode(asm_code, machine_code);
-_write(0, "This will be output to standard out\n", 36);
-// Get the user name
-std::string name;
-std::cout << "What is your name?\n";
-std::getline(std::cin, name);
-std::string hello_name = "Hello, " + name + "!\n";
+a_higher_than_b(a:u8, b:u8):
+ if (a > b)
+  return true
+ false
 
-// Add the message size
-append_message_size(machine_code, hello_name);
+v = a_higher_than_b(1, 2)
 
-//Append the message to the machine code vector:
-for (auto c : hello_name) {
-	machine_code.push_back(c);
-}
+a_higher_than_b(a:u8, b:u8):
+ while (a-- > b)
+  print("test")//add2(1,1)
+ a
 
-// Print the content of the machine_code vector for debugging purposes
-show_machine_code(machine_code);
+v = a_higher_than_b(4, 2)
 
-// Get the required memory size for mmap
-*/
-	machine_code = { 0xB8, 0x02, 0x00, 0x00, 0x00, 0xC3 };
-	machine_code = { 48, 83, 0xec, 28, 0xE8, 0x00, 0x00, 0x00, 0x00, 89, 44, 24, 24, 48, 83, 0xc4, 28, 0xC3 };
-	machine_code = { 0x55, 0x89, 0xE5, 0xE8, 0x00, 0x00, 0x00, 0x00, 0x5D, 0xC3 };
-	__asm {
-		push ebp
-		mov ebp, esp
-		call _test
-		pop ebp
-		ret
-	}
-size_t required_memory_size = machine_code.size();// estimate_memory_size(machine_code.size());
-uint8_t *mem = (uint8_t*)VirtualAlloc(0, required_memory_size, MEM_COMMIT, PAGE_READWRITE);
-//uint8_t *mem = (uint8_t*)mmap(NULL, required_memory_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-if (mem == MAP_FAILED) {
-	std::cerr << "Can't allocate memory\n"; std::exit(1);
-}
+clib = ffi("msvcrt")
+print(string):u8 = clib.get("printf")
+print("Test")
+c:
+ print("Test") 
+ 1
 
-memcpy(mem, machine_code.data(), machine_code.size());
 
-void(*func)();
-DWORD ignore;
-if (!VirtualProtect(mem, sizeof(machine_code), PAGE_EXECUTE_READ, &ignore)) {
-	return 3;
-}
 
-// Flush the instruction cache
-if (!FlushInstructionCache(GetCurrentProcess(), mem, sizeof(machine_code))) {
-	return 4;
-}
-// Cast the address of our generated code to a function pointer and call the function
-func = (void(*)()) mem;
-func();
-int(*fn)() = (int(*)()) mem;
-int result = fn();
-printf("result = 0x%x\n", result); 
+setButton(button: Button | undefined):
+    if (button)
+     print("Has button")
+    }
+    button = undefined;
 
 
+some_func(vv: const vector*):
+ vv.capacity
 
-// Release the mapped memory
-munmap(mem, required_memory_size);
 
+clib = ffi("msvcrt")
+sq(u8):u32 = clib.get("sqrt")
+a = sq(22)
+loggingPlugin = ffi("LoggingPlugin")
+Print(string):u8 = loggingPlugin.get("SimplePrint")
+msg = "Test"
+c(a:u8):
+ while (a-- > 1) 
+  Print(msg)
+ 1
 
+ callback(i32 v):
+  print(msg, v)
 
+HandleEvents(Window, u64):void = windowPlugin.get("HandleEvents") //cb works but not neccesary here
 
+lib = ffi("InputPlugin")
+InputHook():i32 = lib.get("InputHook")
 
+clib = ffi("msvcrt")
+strlen(string):u64 = clib.get("strlen")
+malloc(u64):u64 = clib.get("malloc")
+v:vector = malloc(1)
+vector$size(v:vector*):u64:
+ return v.capacity
 
+v.size()
+
+loggingPlugin = ffi("LoggingPlugin")
+Print(string):u8 = loggingPlugin.get("SimplePrint")
+msg = "Test"
+a = 1
+Print(msg)
 
+
+clib = ffi("msvcrt")
+malloc(u64):u64 = clib.get("malloc")
+v:vector = malloc(1)
+v.capacity = 1
+
+u8$size(v:u8):u8:
+ return v
+
+
+vector$init(v:vector):u8:
+ v.capacity = 1
+ 1
+
+
+a = v.init()
+len = v.size()
+malloc_str(u64):string = clib.get("malloc")
+strcpy(string, string):void = clib.get("strcpy")
+
+str = "This"
+str2 = malloc_str(4)
+strcpy(str2,str)
+
+enum Key = ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TOUCH0, TOUCH1, TOUCH2, TOUCH3, TOUCH4, TOUCH5, TOUCH6, TOUCH7, TOUCH_MOVE0, TOUCH_MOVE1, TOUCH_MOVE2, TOUCH_MOVE3, TOUCH_MOVE4, TOUCH_MOVE5, TOUCH_MOVE6, TOUCH_MOVE7, LEFT, RIGHT, UP, DOWN, HOME, END, MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MOVE, MOUSEWHEEL_UP, MOUSEWHEEL_DOWN, BACKSPACE, SPACE, PERIOD, ENTER, SHIFT, CTRL, BACKTICK, TILDE, QUOTE, QUOTE_DBL, COLON, LEFT_BRACKET, RIGHT_BRACKET, FORWARD_SLASH, COMMA, BACKSLASH, MINUS, EQUALS, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,	XBOX_A, XBOX_B, XBOX_X, XBOX_Y, XBOX_LJOY, XBOX_RJOY, XBOX_LJOYMOVE, XBOX_RJOYMOVE, XBOX_DPAD_DOWN, XBOX_DPAD_UP, XBOX_DPAD_LEFT, XBOX_DPAD_RIGHT, XBOX_LT,	XBOX_LB, XBOX_RT, XBOX_RB, XBOX_START, XBOX_BACK, XBOX_MAIN
+clib = ffi("msvcrt")
+print(string):void = clib.get("puts")
 
+start_app:
+ while(1)
+  i = Key.MOUSEWHEEL_DOWN
+  switch (i)
+   case Key.MOUSEWHEEL_DOWN
+    print("MouseWheel")
+    break
+   case Key.BACKTICK
+    return
+
+
+start_app()
+
+#GENERIC_READ 0x80000000L
+#FILE_SHARE_READ 0x00000001
+#OPEN_EXISTING 3
+#FILE_ATTRIBUTE_NORMAL 0x00000080
+#FILE_MAP_READ 0x0004
+#PAGE_READONLY 0x2    
+#NULL 0
+
+kernel32 = ffi("kernel32")
+clib = ffi("msvcrt")
+printf(u64):void =  clib.get("printf")
+printf(u64, _):void = clib.get("printf")
+s = "test"
+printf(s.data, 1)
+print(s:str, a:u8):void:
+ printf(s.data, a)
+
+print("test", 2)
+
+putchar(i8):void = clib.get("putchar")
+putchar('\n')
+
+print(s:str):void:
+ printf(s.data)
+ putchar('\n')
+
+
+print(s:str, a):void:
+ printf(s.data, a)
+ putchar('\n')
+
+
+clib = ffi("msvcrt")
+printf(u64,_):void = clib.get("printf")
+tt = "test %d\n"
+printf(tt.data, 1)
+
+strcpy(u64, u64):void = clib.get("strcpy")
+CreateFile(u64, u32, u32, u64, u32, u32, u64):u64 = kernel32.get("CreateFileA")
+GetFileAttributes(u64):u64 = kernel32.get("GetFileAttributesA")
+GetFileSize(u64, u32):u32 = kernel32.get("GetFileSize")
+CreateFileMapping(u64, u64, u32, u32, u32, u64):u64 = kernel32.get("CreateFileMappingA")
+MapViewOfFile(u64, u32 u32 u32, u64):u64 = kernel32.get("MapViewOfFile")
+CloseHandle(u64):void = kernel32.get("CloseHandle")
+
+string(_data:u64, cap:u64):string:
+ s:string = allocc(24)
+ s.size = cap
+ s.capacity = cap
+ s.data = allocc(cap)
+ strcpy(s.data, _data)
+ s
+
+
+ReadFile(str:string):string:
+ file = CreateFile(str.data, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)
+ fileSize = GetFileSize(file, 0)
+ mappedFile = CreateFileMapping(file, NULL, PAGE_READONLY, NULL, NULL, NULL)
+ data = MapViewOfFile(mappedFile, FILE_MAP_READ, 0, 0, fileSize)
+ s = string(data, fileSize)
+ s
+
+s1 = ReadFile("testfile_med")
+s1
+
+8562
+str = "testfile_small"
+print(str, 0)
+file = CreateFile(str.data, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)
+print("file: %d", file)
+fileSize = GetFileSize(file, 0)
+print("fileSize: %d", fileSize)
+mappedFile = CreateFileMapping(file, NULL, PAGE_READONLY, NULL, NULL, NULL)
+print("mappedFile: %d", mappedFile)
+data = MapViewOfFile(mappedFile, FILE_MAP_READ, 0, 0, fileSize)
+CloseHandle(mappedFile)
+CloseHandle(file)
+print("data: %d", data)
+s = string(data, fileSize)
+
+
+
+
+str1 = "testfile_small"
+s = ReadFile(str1)
+
+str = "testfile_small"
+file = CreateFile(str.data, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL)
+fileSize = GetFileSize(file, 0)
+mappedFile = CreateFileMapping(file, NULL, PAGE_READONLY, NULL, NULL, NULL)
+data = MapViewOfFile(mappedFile, FILE_MAP_READ, 0, 0, fileSize)
+s = string(data, fileSize)
+ 
+#GENERIC_READ 0x80000000L
+#FILE_SHARE_READ 0x00000001
+#OPEN_EXISTING 3
+#FILE_ATTRIBUTE_NORMAL 0x00000080
+#FILE_MAP_READ 0x0004
+#PAGE_READONLY 0x2    
+#NULL 0
+
+clib = ffi("msvcrt")
+putchar(i8):void = clib.get("putchar")
+printf(u64):void = clib.get("printf")
+printf(u64, _):void = clib.get("printf")
+s = "test"
+printf(u64, _, _):void = clib.get("printf")
+print(str:string, a):void:
+ printf(str.data, a)
+
+print(s, 1)
+
+print(str:string, a, b):void:
+ printf(str.data, a, b)
+
+printLn(str:string):void:
+ printf(str.data)
+ putchar('\n')
+
+printLn(str:string, a):void:
+ printf(str.data, a)
+ putchar('\n')
+
+
+kernel32 = ffi("kernel32")
+SetConsoleTitle(u64):void = kernel32.get("SetConsoleTitleA")
+BeginThread(u64, u32, u64):u64 = clib.get("_beginthread")
+EnterCriticalSection(u64):void = kernel32.get("EnterCriticalSection")
+LeaveCriticalSection(u64):void = kernel32.get("LeaveCriticalSection")
+InitializeCriticalSection(u64):void = kernel32.get("InitializeCriticalSection")
+DeleteCriticalSection(u64):void = kernel32.get("DeleteCriticalSection")
+Sleep(u64):void = clib.get("_sleep")
+#INFINITE 0xFFFFFFFF
+CreateMutex(u64,u8,u64):u64 = kernel32.get("CreateMutexA")
+WaitForSingleObject(u64, i8):void = kernel32.get("WaitForSingleObject")
+ReleaseMutex(u64):void = kernel32.get("ReleaseMutex")
+strcpy(u64, u64):void = clib.get("strcpy")
+CreateFile(u64, u32, u32, u64, u32, u32, u64):u64 = kernel32.get("CreateFileA")
+GetFileAttributes(u64):u64 = kernel32.get("GetFileAttributesA")
+GetFileSize(u64, u32):u32 = kernel32.get("GetFileSize")
+CreateFileMapping(u64, u64, u32, u32, u32, u64):u64 = kernel32.get("CreateFileMappingA")
+MapViewOfFile(u64, u32 u32 u32, u64):u64 = kernel32.get("MapViewOfFile")
+CloseHandle(u64):void = kernel32.get("CloseHandle")
+
+
+
+mutex = CreateMutex(0,0,0)
+
+SetConsoleTitle(str:string):void:
+ SetConsoleTitle(str.data)
+
+test = "test"
+
+Test2:
+ while(1)
+  WaitForSingleObject(mutex, -1)
+  SetConsoleTitle(test)
+  ReleaseMutex(mutex)
+ 1
+
+Thread:
+ a = BeginThread(Test2,0,0)
+ Sleep(1000)
+
+Thread()
+
+clib = ffi("msvcrt")
+
+
+windowPlugin = ffi("WindowPlugin")
+CreateWindow(u64, i32, i32, i32, i32):Window = windowPlugin.get("_CreateWindow")
+HandleEvents(Window):i32 = windowPlugin.get("HandleEvents")
+SwapBuffers(Window):i32 = windowPlugin.get("_SwapBuffers")
+#GL_FRAGMENT_SHADER 0x8B30 //a define
+#GL_COLOR_BUFFER_BIT 0x00004000
+#GL_DEPTH_BUFFER_BIT 0x00000100
+#TEMP 16640
+enum Key = ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TOUCH0, TOUCH1, TOUCH2, TOUCH3, TOUCH4, TOUCH5, TOUCH6, TOUCH7, TOUCH_MOVE0, TOUCH_MOVE1, TOUCH_MOVE2, TOUCH_MOVE3, TOUCH_MOVE4, TOUCH_MOVE5, TOUCH_MOVE6, TOUCH_MOVE7, LEFT, RIGHT, UP, DOWN, HOME, END, MOUSE_LEFT, MOUSE_RIGHT, MOUSE_MOVE, MOUSEWHEEL_UP, MOUSEWHEEL_DOWN, BACKSPACE, SPACE, PERIOD, ENTER, SHIFT, CTRL, BACKTICK, TILDE, QUOTE, QUOTE_DBL, COLON, LEFT_BRACKET, RIGHT_BRACKET, FORWARD_SLASH, COMMA, BACKSLASH, MINUS, EQUALS, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z,	XBOX_A, XBOX_B, XBOX_X, XBOX_Y, XBOX_LJOY, XBOX_RJOY, XBOX_LJOYMOVE, XBOX_RJOYMOVE, XBOX_DPAD_DOWN, XBOX_DPAD_UP, XBOX_DPAD_LEFT, XBOX_DPAD_RIGHT, XBOX_LT,	XBOX_LB, XBOX_RT, XBOX_RB, XBOX_START, XBOX_BACK, XBOX_MAIN
+title = "Window"
+window = CreateWindow(title.data, 2000, 400, 800, 800)
+glClear(u16):void = glsym("glClear")
+glClearColor(f32,f32,f32,f32):void = glsym("glClearColor")
+glCreateShader(i32):i32 = glsym("glCreateShader")
+glShaderSource(i32, i32, u64, i32):i32 = glsym("glShaderSource")
+r = 0.0
+g = 0.0
+
+draw:
+ glClearColor(r,g,1.0,1.0)
+ glClear(TEMP)
+ SwapBuffers(window)
+
+
+startApp:
+ while(1)
+  i = HandleEvents(window)
+  draw()
+  switch (i)
+   case Key.MOUSEWHEEL_DOWN
+    printLn("MOUSEWHEEL_DOWN")
+    g += 0.1
+    break
+   case Key.MOUSE_LEFT
+    printLn("MOUSE_LEFT")
+    r -= 0.1
+    break
+   case Key.MOUSE_RIGHT
+    printLn("MOUSE_RIGHT")
+    r += 0.1
+    break
+   case Key.BACKTICK
+    return
+
+
+
+
+testStart:
+ print(tt, 1)
+ print(tt, 1)
+ print("MOUSE_LEFT", 1)
+
+testStart()
+startApp()
+
+glClearColor(0.392, 0.584, 0.929, 0.0)
+
+
+int_vector = [1,2,3,4]
+string_vector = ["Hello","World"]
+mixed_vector = ["Hi", 11]
+
+clib = ffi("msvcrt")
+printf(string):void = clib.get("printf")
+
+
+f(a:u8):u8:
+ 10
+
+f(a:u8,b:u8):u8:
+ a + b
+
+f(1)
+f(10, 1)
+
+clib = ffi("msvcrt")
+putchar(i8):void = clib.get("putchar")
+printf(u64, _):void = clib.get("printf")
+printf(u64, _, _):void = clib.get("printf")
+print(str:string, a):void:
+ printf(str.data, a)
+print(str:string, a, b):void:
+ printf(str.data, a, b)
+printLn(str:string, a):void:
+ printf(str.data, a)
+ putchar('\n')
+
+printLn("test", 1)
+clib = ffi("msvcrt")
+printf(u64):void = clib.get("printf")
+print(str:string):void:
+ printf(str.data)
+
+clib = ffi("msvcrt")
+printf(string):void = clib.get("printf")
+printf("")
+
+print(str:string):void:
+ printf(str.data)
+
+string$print(s:string)
+ printf(s.data)
+
+print("test")
+
+testb = "Has b\n"
+testa = "Has a\n"
+c = 'b'
+d = 'v'
+start_app(_char:i8):
+ switch(_char)
+  case 'b'
+   print(testb, 2)
+   break
+  default
+   print(testa, 4)
+
+
+
+clib = ffi("msvcrt")
+print(string,i32):void = clib.get("printf")
+testb = "Has b\n"
+testa = "Has a\n"
+c = 'b'
+start_app:
+ if (c == 'b')
+  print(testb, 2)
+ 
+
+
+enum Key = ZERO, ONE
+a = Key.ZERO
+msg = "msg:%d\n"
+clib = ffi("msvcrt")
+print(string,Key):void = clib.get("printf")
+startapp(key:Key):
+ print(msg, key)
+
+startapp(Key.ONE)
+a = 1
+msg = "msg:%d\n"
+clib = ffi("msvcrt")
+print(string,i32):void = clib.get("printf")
+start_app(key:i32):
+ print(msg, 2)
+
+a = 1
+msg = "message:%d\n"
+clib = ffi("msvcrt")
+print(string,i32):void = clib.get("printf")
+print(msg, 2)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#include "interpreter.h"
-#include "Parser.h"
-#include <any>
-#include <functional>
-/*std::unordered_map<std::string, std::any> variables;
-template<typename Ret>
-struct AnyCallable
-{
-	AnyCallable() {}
-	template<typename F>
-	AnyCallable(F&& fun) : AnyCallable(std::function(fun)) {}
-	template<typename ... Args>
-	AnyCallable(std::function<Ret(Args...)> fun) : m_any(fun) {}
-	template<typename ... Args>
-	Ret operator()(Args&& ... args)
-	{
-		return std::invoke(std::any_cast<std::function<Ret(Args...)>>(m_any), std::forward<Args>(args)...);
-	}
-	std::any m_any;
-};
-
-template<>
-struct AnyCallable<void>
-{
-	AnyCallable() {}
-	template<typename F>
-	AnyCallable(F&& fun) : AnyCallable(std::function(fun)) {}
-	template<typename ... Args>
-	AnyCallable(std::function<void(Args...)> fun) : m_any(fun) {}
-	template<typename ... Args>
-	void operator()(Args&& ... args)
-	{
-		std::invoke(std::any_cast<std::function<void(Args...)>>(m_any), std::forward<Args>(args)...);
-	}
-	std::any m_any;
-};
-std::unordered_map<std::string, AnyCallable<void>> functions;
-void to_integer(const std::string& in, int& tt) {
-	tt = std::stoi(in);
-}
-void to_string(const int in, std::string& tt) {
-	tt = std::to_string(in);
-}
-enum Types {
-	NUMBER, STRING
-};
-enum Action {
-	NONE, EQUALS, ADD
-};*/
-Interpreter::Interpreter(Parsed& parsed) {
-	//skip this for now, more interested in jit and aot function
-	//s = s + to_string(i)
-	//or
-	//s = s + str(i)
-	//or
-	//s = s + _s(i)
-	//or
-	//s += _s(i)
-	/*functions["_s"] = &to_string;
-	auto t = UnparsedToken();
-	VariableToken to_interp = VariableToken(t);
-	to_interp.name = "s";
-	to_interp.type = "str";
-	to_interp.value.push_back("=");
-	to_interp.value.push_back("s");
-	to_interp.value.push_back("+");
-	to_interp.value.push_back("_s(i)");
-	variables["s"] = "test";
-	variables["i"] = 1;
-	variables["f"] = AnyCallable<std::any>();
-	auto type = variables["s"].type().hash_code();
-	auto var = variables[to_interp.name];
-	auto var_type = var.type().hash_code();
-	auto var_type2 = var.type().name();
-	auto var_type21 = var.type().raw_name();
-	Action action = NA;
-	if (var_type == 11) {
-
-	}
-	else if (var_type == 17648624087129316105) {
-		std::string o = std::any_cast<char const * __ptr64>(var);
-		std::string last = o;
-		for (auto v : to_interp.value) {
-			if (v == "=") {
-				action = EQUALS;
-			}
-			else if (v == "+") {
-				action = ADD;
-			}
-			else if (v == "+=") {
-				action = ADD;
-			}
-			else {
-				std::unordered_map<std::string, std::any>::iterator got;
-				std::unordered_map<std::string, AnyCallable<void>>::iterator got2;
-				got = variables.find(v);
-				std::string vv = "";
-				if (got == variables.end) {
-					got2 = functions.find(v);
-					std::any_cast<AnyCallable<void>>(got2->second)();
-				}
-				else {
-					vv = std::any_cast<std::string>(got->second);
-				}
-				if (action == ADD)
-					o = last + std::any_cast<std::string>(variables[v]) + std::any_cast<std::string>(variables[v]);
-			}
-		}
-	}
-	Types tt;
-	std::vector<AnyCallable<void>> list;
-	
-	if (type == 12215654530029034450) {
-		std::string tt;
-		functions["_s"](1, tt);
-		//variables["s"] = variables["s"] + variables["_s"] + ;
-	}
-
-	std::cout << variables["i"].type().name() << '\n';
-	std::cout << variables["v"].type().name() << '\n';
-	std::cout << variables["f"].type().name() << '\n';
-	auto result = std::any_cast<int>(variables["i"]) + std::any_cast<int>(variables["v"]);*/
-}

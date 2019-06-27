@@ -1,0 +1,128 @@
+class Animal
+ age:u8 = 1
+ name="test"
+ Animal:
+  age = 2
+ 
+ talk:
+  1
+ jump:
+  1
+
+
+class Duck < Animal
+ talk:
+  2
+
+a = Animal()
+d = Duck()
+
+a.talk()
+d.talk()
+a.jump()
+d.jump()
+
+
+class Animal
+ age:u8 = 1
+ name="test"
+ Animal:
+  age = 2
+
+tAnimal(a:Animal):u64:
+ 1
+
+a = Animal()
+
+tAnimal(a)
+
+
+class Animal
+ VTABLE:u8 = 0
+ age:u8 = 1
+ name="test"
+ Animal:
+  age = 2
+ 
+ talk:
+  11
+
+class Duck < Animal
+ talk:
+  22
+
+a = Animal()
+_u8_talk_Animal(a)
+_u8_talk_Animal$(a)
+d = Duck()
+d.talk()
+
+creates
+
+struct Animal{
+VTABLE
+u8 age;
+str* name;
+};
+struct Duck{
+VTABLE
+u8 age;
+str* name;
+};
+u8 u8talkAnimal(Animal* T$){
+return 1;
+}
+u8 u8talkDuck(Duck* T$){
+return 2;
+}
+
+Animal* AnimalAnimal( ){
+Animal* T$ = _u64_allocc_u64(9);
+T$->GET_TABLE(Animal) = TABLE(Animal);
+T$->age = 1;
+T$->name = 0;
+return T$;
+}
+
+Duck* DuckDuck( ){
+Duck* T$ = _u64_allocc_u64(9);
+T$->GET_TABLE(Duck) = TABLE(Duck);
+T$->age = 1;
+T$->name = 0;
+return T$;
+}
+GET_TABLE(Animal) = { &u8talkAnimal };
+GET_TABLE(Duck) = { &u8talkDuck };
+
+u8 u8AnimaltalkAnimal(Animal* T$){
+return Call_talk(T$);
+}
+
+d.talk()
+will call u8AnimaltalkAnimal -> u8talkDuck
+just change all talk(Animal)/talk(Duck) to u8AnimaltalkAnimal
+
+
+class TClass
+ t:
+  1
+
+tt = TClass()
+tt.t()
+update:
+ 1
+
+update2:
+ 2
+
+vupdate(v:u8):u8:
+ switch(v)
+  case 0
+   return update()
+  case 1
+   return update2()
+ return 1
+
+
+vupdate(0)
+vupdate(1)

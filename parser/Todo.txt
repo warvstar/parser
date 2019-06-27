@@ -1,0 +1,33 @@
+Variables can all reserve a full 8 bytes
+Functions and strings can point to their corresponding memory
+
+For now functions cannot be converter to variables and vice versa
+
+
+
+
+
+Serialize vm code and labels. with comrpression
+Add proper string type with length and data functions
+Write a function for reading from files
+compile a glshader
+Add proper AOT mode, all constants/globals can be stored in code. malloc for new objects at runtime
+Add diff patching of code
+Add support for bitflags |
+AcceptInput(XboxController | Keyboard)
+
+
+//done
+Add support for loops and branches
+Add input and window classes
+
+Compile multiple functions and classes at once, get functions and put in vm.
+When compiling multiple functions or classes, make sure to compile with no inline so we get all the functions. A second optimizing pass can be done after that compiles as inlined. This way we can call functions from new functions.
+
+To get label positions, will have to preprocess all modules first
+
+func1: pos 1000
+ 1
+
+func2: pos 1500
+ 1

@@ -1,0 +1,44 @@
+any(v):
+ a:any = allocc(16)
+ a.pointer = &v
+ a.type = "test"
+ a
+
+v = any(1)
+
+any(v:u8):any:
+ a:any = allocc(16)
+ a.pointer = v
+ a.type = "test"
+ a
+
+v = any(1)
+v
+
+printAnyType(v:any):
+ v.type
+
+printAnyValue(v:any):
+ v.pointer
+
+printAnyValue(v:any):
+ v.pointer
+
+v = 1
+a:any = allocc(16)
+a.pointer = &v
+
+b:u8 = a.pointer //should automatically cast if compiler finds compatible
+
+b:u8 = CastAs<u8>(a.pointer) //otherwise use a cast to force
+
+//helper function
+
+any$get(a:any):
+ CastAs<TypeOf(a.pointer)>(a.pointer)
+
+b = a.get()
+
+a:u16 = 1000
+
+b:u8 = CastAs<u8>(a)

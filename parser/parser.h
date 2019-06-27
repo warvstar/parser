@@ -1,6 +1,6 @@
 #pragma once
 #include "std.core.h"
-#include "bitmask.hpp"
+
 #include <mutex>
 #include "tokens.h"
 /*enum class Options : uint32_t {
@@ -16,7 +16,6 @@ enum class Options {
 	// 2. Define max bitmask value
 	_bitmask_max_element = MACHINE_CODE
 };
-BITMASK_DEFINE(Options);
 /*template<typename Enum>
 struct EnableBitMaskOperators
 {
@@ -52,11 +51,20 @@ struct ParsedResult {
 	std::string lua = "";
 	std::string machine_code = "";
 };
+typedef std::variant<uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, uint64_t, std::string> Variant;
+class VM;
 namespace Parser {
-	ParsedResult getCode(const Options flags, const std::string& fn);
-	std::string getLua(std::string_view source);
-	std::string getCpp(std::string_view source);
-	std::string getMachineCode(std::string_view source);
+	void start();
+	void end();
+	bool getMachineCode(VM& vm, std::string_view source, bool _abs = false);
+	void queueMachineCode(VM& vm, std::string_view source, bool _abs = false);
+	bool preprocess(VM& vm, std::string_view source, std::vector<std::unique_ptr<Token>>& tokens, bool _abs = false);
+	CPP tocpp(VM& vm, std::string_view source, bool _abs = false);
+	CPP tocpp(VM& vm, std::vector<std::unique_ptr<Token>>& tokens, bool _abs = false);
+	bool compile(VM& vm, std::string_view source, bool _abs = false);
+	bool compile(VM& vm, std::vector<std::unique_ptr<Token>>& tokens, bool _abs = false);
+	Variant execMachineCode(VM& vm, std::string_view source);
+	Token* Parse(std::string_view source, std::vector<std::unique_ptr<Token>>& tokens);
 }
 enum TokenType {
 	NA, CLASS, VARIABLE, FUNCTION
@@ -82,39 +90,11 @@ struct Parsed {
 		});
 		return (instance.get());
 	}
-	Token* root = nullptr;
-	std::vector<std::unique_ptr<Token>> tokens;
+	VM* vm;
+	VM& getVM() {
+		return *vm;
+	};
+	Parsed();
 	std::unordered_map<std::string, struct FunctionToken*> functions;
 	std::unordered_map<std::string, struct VariableToken*> variables;
 };
-//change everything to string_view later and use indexes for start and end of token
-struct Variable {
-	std::string name = "";
-	std::string type = "";
-};
-struct Function {
-	std::string name = "";
-	std::string ret = "";
-};
-struct Class {
-	std::string name = "";
-	std::vector<Variable> variables;
-	std::vector<Function> functions;
-
-};
-struct Unparsed {
-	uint32_t start, end = 0;
-};
-struct UnparsedVariable : public Unparsed {
-	Function ToVariable() {
-	};
-};
-struct UnparsedFunction {
-	Function ToFunction() {
-	};
-};
-struct UnparsedClass {
-	Function ToClass() {
-	};
-};
-void Parse(std::string_view source);

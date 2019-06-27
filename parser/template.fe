@@ -1,0 +1,25 @@
+GetType(v:u8):
+ v
+
+GetType(22)
+GetType(22)
+
+GetType(v):
+ v
+
+GetType("test")
+GetType(1)
+
+PrintString(s:string):
+ s
+
+PrintString("test")
+
+GetType(v):
+ TypeOf(v)
+
+PrintType(v):
+ print(TypeOf(v))
+
+
+cannot increment value-initialized deque iterator

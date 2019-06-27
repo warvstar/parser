@@ -1,0 +1,24 @@
+func1:
+ func2()
+
+clib = ffi("msvcrt")
+printf(u64, u8):void = clib.get("printf")
+text = "%d\n"
+print(v:u8):void:
+ printf(text.data, v)
+
+printf(u64):void = clib.get("printf")
+printf(u64, _):void = clib.get("printf")
+putchar(i8):void = clib.get("putchar")
+
+printLn(s:str):void:
+ printf(s.data)
+ putchar('\n')
+
+print(s:str):void:
+ printf(s.data)
+
+main:
+ printLn("Some line.")
+ print("Some line 2.\n")
+ func1()

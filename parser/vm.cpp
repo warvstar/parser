@@ -1,7 +1,97 @@
 #include "vm.h"
 #include "helper.h"
+#include "parser.h"
 #include "fmt/format.h"
+#include "basic_types.h"
 using namespace fmt;
+
+VM::VM() {
+	free_memory_positions.push_back({ 0, mp.mem_size/2 });
+	free_memory_positions_vars.push_back({ mp.mem_size/2, mp.mem_size});
+}
+
+void VM::save() {
+	auto data = this->labels.da
+}
+void VM::append() {
+
+}
+void VM::load() {
+
+}
+intptr_t VM::alloc(uint64_t size, uint64_t& pos) {
+	bool found = false;
+	for (auto& p : free_memory_positions) {
+		if ((p.end - p.start) >= size) {
+			if ((p.end - p.start) == size)
+				p.end = 0;
+			auto old = p.start;
+			p.start += size;
+			pos = old;
+			found = true;
+			break;
+		}
+	}
+	free_memory_positions.erase(std::remove_if(free_memory_positions.begin(), free_memory_positions.end(), [](mem_info v) { return v.end == 0; }), free_memory_positions.end());
+	if (found) {
+		//memcpy should not be needed here, should be faster
+		//std::memcpy((mp.mem + pos), &mp.mem[pos], sizeof(&mp.mem[pos]));
+		return (intptr_t)& mp.mem[pos];
+	}
+	else {
+		pos = 0;
+		printf("Out of memory.\n");
+		return -1;
+	}
+}
+intptr_t VM::alloc_var(uint64_t size, uint64_t& pos) {
+	bool found = false;
+	for (auto& p : free_memory_positions_vars) {
+		if ((p.end - p.start) >= size) {
+			if ((p.end - p.start) == size)
+				p.end = 0;
+			auto old = p.start;
+			p.start += size;
+			pos = old;
+			found = true;
+			break;
+		}
+	}
+	free_memory_positions_vars.erase(std::remove_if(free_memory_positions_vars.begin(), free_memory_positions_vars.end(), [](mem_info v) { return v.end == 0; }), free_memory_positions_vars.end());
+	if (found) {
+		//memcpy should not be needed here, should be faster
+		//std::memcpy((mp.mem + pos), &mp.mem[pos], sizeof(&mp.mem[pos]));
+		return (intptr_t)& mp.mem[pos];
+	}
+	else {
+		pos = 0;
+		printf("Out of memory.\n");
+		return -1;
+	}
+}
+void VM::addMacro(const std::string& var, const std::string& val) {
+	macros[var] = val;
+}
+std::string VM::getMacros() {
+	std::string out = "";
+	for (auto m : macros)
+		out += "#define " + m.first + " " + m.second + "\n";
+	return out;
+}
+void VM::free(uint64_t start, uint64_t size) {
+	auto end = start + size;
+	for (auto& p : free_memory_positions) {
+		if (p.end == start) {
+			p.end += size;
+			return;
+		}
+		else if (p.start == end) {
+			p.start -= size;
+			return;
+		}
+	}
+	free_memory_positions.push_back({ start, end });
+}
 
 void VM::debug_push(const std::string& l) {
 	debug_string_temp += l;
@@ -88,8 +178,38 @@ VMClass VM::_class(const std::string & l) {
 	classes[l] = VMClass();
 	return classes[l];
 }
-void VM::AddBlock(CodeBlock& block) {
-
+uint32_t VM::getBytesUsed() {
+	std::string out = "";
+	for (auto l : labels)
+		l.second.getMachineCode(*this, out);
+	return out.size();
+}
+void VM::printAllLabels() {
+	for (auto l : labels) {
+		if (l.second.position == 0)
+			continue;
+		printf("Label:%s\n", l.first.data());
+		if (l.second.debug.size() > 0)
+			l.second.print(*this);
+		else {
+			std::string out = "";
+			std::string out2 = "";
+			l.second.getMachineCode(*this, out);
+			for (auto val : out)
+				out2 += Helper::int_to_hex(UCHAR(val)) + " ";
+			printf("%s", out2.data());
+		}
+		printf("\n");
+	}
+}
+std::string VM::getAllLabelsMachineCode() {
+	std::string out = "";
+	for (auto l : labels)
+		if (l.second.position == 0)
+			continue;
+		else
+			l.second.getMachineCode(*this, out);
+	return out;
 }
 void VM::preserve(x64 reg) {
 	if (reg == x64::a) {
@@ -108,6 +228,9 @@ void VM::recover(x64 reg) {
 		mp.push({ 0x48, 0x89, 0xF1 }); debug_push("mov rcx, rsi");
 	}
 	debug_endline();
+}
+void VM::addTemplateFunction(const std::string & name, const std::string & mangled, const std::string & body, const std::vector<std::string>& args) {
+	template_functions[name][mangled] = { body, args };
 }
 void VM::move(x64 a, x64 b) {
 	if (a == x64::a) {
@@ -615,10 +738,13 @@ void VM::move(uint64_t value, x64 reg) {
 	move((int64_t)value, reg);
 }
 //creates a ptr and assigns an i32 to it
-size_t VM::create_i32(int32_t v) {
-	return 1;
+Label& VM::create_i32(const std::string & name, int32_t v) {
+	return label(name, (uint32_t)v);
 }
-Label VM::create_string(const std::string & name, const std::string & v) {
+Label& VM::create_ui64(const std::string & name, uint64_t v) {
+	return label(name, v);
+}
+Label& VM::create_string(const std::string & name, const std::string & v) {
 	return label(name, v);
 }
 //adds two values at pointers
@@ -631,6 +757,9 @@ size_t VM::create_ptr() {
 //call a function
 void VM::call_near(uint8_t* fn) {
 	auto v = Helper::calculateCallOperand(fn, &mp.mem[mp.position]); mp.push({ 0xE8 }); debug_push("call,"); mp.push_fn_h(v); debug_push(func); debug_endline();
+}
+void VM::call_near_from(uint8_t* fn, int from) {
+	auto v = Helper::calculateCallOperand(fn, &mp.mem[from]); mp.push({ 0xE8 }); debug_push("call,"); mp.push_fn_h(v); debug_push(func); debug_endline();
 }
 void VM::call_far(size_t fn) {
 	move_abs(fn);
@@ -772,36 +901,120 @@ void VM::call(const std::string& fn) {
 	func = "";
 	clear_registers();
 }
-Label VM::label(const std::string& l, BasicType basic) {
+Label& VM::label(const std::string& l, BasicType basic) {
+	//if (l == "_i32_add2_i32")
+		//printf("test");
+	auto got = labels.find(l);
+	if (got != labels.end())
+		return got->second;
 	debug_push(l + ":");
-	labels[l].ptr = mp.position;
+	labels[l].name = l;
+	uint64_t val = 0;
+	auto ptr = alloc(250, val);
+	//auto test = (uint64_t)&mp.mem[val];
+	//std::memcpy((mp.mem + val), &ptr, sizeof(ptr));
+	labels[l].ptr = val;
 	labels[l].basic = basic;
 	debug_declare_label();
 	return labels[l];
 }
-Label VM::label(const std::string & l, std::variant<uint8_t, uint16_t, uint32_t, uint64_t, std::string> v) {
+Label& VM::label(const std::string& l, std::vector<uint8_t> code) {
+	auto& _label = label(l, BasicType::i32);
+	_label.position = 0; //reset position
+	mp.fill(_label, code);
+	return _label;
+}
+Label& VM::label(const std::string & l, std::variant<uint8_t, uint16_t, uint32_t, uint64_t, int8_t, int16_t, int32_t, int64_t, double, float, std::string> v) {
 	if (std::holds_alternative<uint32_t>(v)) {
-		auto _label = label(l, BasicType::i32);
+		auto& _label = label(l, BasicType::u32);
+		_label.position = 0; //reset position
 		auto str = std::get<uint32_t>(v);
-		mp.push_fn_h(str); debug_push(":" + l); debug_endline();
+		mp.fill(_label, str); debug_push(":" + l); debug_endline();
 		return _label;
 	}
 	else if (std::holds_alternative<uint64_t>(v)) {
-		auto _label = label(l, BasicType::i64);
+		auto& _label = label(l, BasicType::u64);
+		_label.SetType({ BasicType::u64, "u64" });
+		_label.by = By::val;
+		_label.position = 0; //reset position
 		auto str = std::get<uint64_t>(v);
-		mp.push_fn((size_t)str); debug_push(":" + l); debug_endline();
+		mp.fill(_label, str); debug_push(":" + l); debug_endline();
+		return _label;
+	}
+	else if (std::holds_alternative<float>(v)) {
+		auto& _label = label(l, BasicType::f32);
+		_label.SetType({ BasicType::f32, "f32" });
+		_label.by = By::val;
+		_label.position = 0; //reset position
+		auto str = std::get<float>(v);
+		mp.fill(_label, str); debug_push(":" + l); debug_endline();
+		return _label;
+	}
+	else if (std::holds_alternative<double>(v)) {
+		auto& _label = label(l, BasicType::f64);
+		_label.SetType({ BasicType::f64, "f64" });
+		_label.by = By::val;
+		_label.position = 0; //reset position
+		auto str = std::get<double>(v);
+		mp.fill(_label, str); debug_push(":" + l); debug_endline();
+		return _label;
+	}
+	else if (std::holds_alternative<int64_t>(v)) {
+		auto& _label = label(l, BasicType::i64);
+		_label.SetType({ BasicType::i64, "i64" });
+		_label.by = By::val;
+		_label.position = 0; //reset position
+		auto str = std::get<int64_t>(v);
+		//*(intptr_t*)(vm.mp.mem + vm.mp.position) = (intptr_t)do_nothing;
+		//vm.mp.position += sizeof(intptr_t);
+		mp.fill(_label, str); debug_push(":" + l); debug_endline();
+		return _label;
+	}
+	else if (std::holds_alternative<uint16_t>(v)) {
+		auto& _label = label(l, BasicType::u16);
+		_label.position = 0; //reset position
+		auto str = std::get<uint16_t>(v);
+		mp.fill(_label, str); debug_push(":" + l); debug_endline();
+		return _label;
+	}
+	else if (std::holds_alternative<uint8_t>(v)) {
+		auto& _label = label(l, BasicType::u8);
+		_label.position = 0; //reset position
+		auto str = std::get<uint8_t>(v);
+		mp.fill(_label, str); debug_push(":" + l); debug_endline();
 		return _label;
 	}
 	else if (std::holds_alternative<std::string>(v)) {
-		auto _label = label(l, BasicType::str);
+		auto& _label = label(l, BasicType::str);
+		_label.SetType({ BasicType::str, "string" });
+		_label.by = By::val;
+		_label.position = 0; //reset position
 		auto str = std::get<std::string>(v);
-		mp.push_string(str); debug_push(":" + l); debug_endline();
+		uint64_t val = 0;
+		auto ptr = alloc(24, val);
+		mp.fill(_label, ptr); debug_push(":" + l); debug_endline();
+		string* s = (string*)(*(intptr_t*)&mp.mem[_label.ptr]);
+		str += '\0';
+		s->size = str.size();
+		s->capacity = str.size();
+		s->data = (char*)alloc(str.size(), val);
+		std::memcpy(s->data, str.data(), str.size());
 		return _label;
 	}
-	return Label();
-	//auto t = ForceCast<size_t>(str);
-	//auto t1 = ForceCast<size_t>(v);
-	//auto t2 = std::get<size_t>(v);
+	return null_label;
+}
+void DoNothing() {
+}
+VM::variant_func VM::Run(const std::string & l) {
+	auto got = labels.find(l);
+	if (got != labels.end()) {
+		auto _print = reinterpret_cast<variant_func>(&mp.mem[got->second.ptr]);
+		return _print;
+	}
+	else {
+		printf("Function(%s) does not exist.\n", l.data());
+		return reinterpret_cast<variant_func>(DoNothing);
+	}
 }
 void VM::print() {
 	printf("%s", debug_string.data());
@@ -824,178 +1037,323 @@ void VM::optimize() {
 
 }
 
-void CodeBlock::Set(const std::string& n, std::variant<size_t, Label, _reg, nullobj> v) {
-	registers.push_back(std::make_shared<VirtualReg>(order++, registers.size() + 1, n, v));
+void Label::ret(VM& vm) {
+	vm.mp.fill(*this, (uint8_t)0xC3); vm.debug_push("ret"); vm.debug_endline();
 }
-void CodeBlock::Add(const std::string& n, std::variant<size_t, Label, _reg, nullobj> v) {
-	auto last = gets.back().get();
-	last->type = SymbolType::Plus;
-	Get(n, v);
-	auto next = gets.back().get();
-	last->depends_on.push_back(next);
-	next->dependant_on.push_back(last);
+
+void Label::call_near(VM & vm, const std::string & func) {
+	auto label = vm.labels[func].ptr;
+	auto v = Helper::calculateCallOperand(&vm.mp.mem[label], &vm.mp.mem[ptr + position]); vm.mp.fill(*this, (uint8_t)0xE8); vm.debug_push("call,");
+	std::memcpy((vm.mp.mem + ptr + position), &v, sizeof v);
+	position += sizeof v;
+	vm.debug_push(func); vm.debug_endline();
+
 }
-void CodeBlock::Set(const std::string & n) {
-	registers.push_back(std::make_shared<VirtualReg>(order++, registers.size() + 1, n, nullobj()));
+		
+void Label::call_far(VM & vm, const std::string & func) {
+	auto label = vm.labels[func].ptr;
+	vm.mp.fill(*this, { 0x48, 0xB8 }); vm.debug_push("movabs rax,");
+	std::memcpy((vm.mp.mem + ptr + position), &label, sizeof label);
+	position += sizeof label;
+	vm.debug_push(func);
+	vm.debug_endline();
+	vm.mp.fill(*this, { 0xFF, 0xD0 }); vm.debug_push("call, rax"); vm.debug_endline();
 }
-VirtualHandle CodeBlock::Set(VirtualReg reg) {
-	printf("Creating virtual register %d", registers.size());
-	return VirtualHandle();
-}
-VirtualHandle CodeBlock::Set(Label label) {
-	return VirtualHandle();
-}
-void CodeBlock::Get(const std::string & n, std::variant<size_t, Label, _reg, nullobj> v) {
-	int nn = gets.size() + 1;
-	if (std::holds_alternative<_reg>(v)) {
-		auto str = std::get<_reg>(v);
-		nn = str.val + 1;
+
+void Label::move(VM & vm, int32_t value, x64 reg) {
+	std::array<uint8_t, 3> code;
+	std::string text = "";
+	std::string out_string = "movabs {}, {}";
+	std::string a_reg = "rax";
+	std::string offset = "";
+	if (reg == x64::a) { //rax
+		code = { 0x48, 0xC7, 0xC0 };
 	}
-	gets.push_back(std::make_shared<VirtualReg>(order++, nn, n, v));
-	if (std::holds_alternative<size_t>(v)) {
-		auto str = std::get<size_t>(v);
-		gets.back()->type = SymbolType::UnsignedInt;
+	else if (reg == x64::b) {
+		code = { 0x48, 0xC7, 0xC1 };
+		a_reg = "rcx";
+	}
+	else if (reg == x64::c) {
+		code = { 0x48, 0xC7, 0xC2 };
+		a_reg = "rdx";
+	}
+	else if (reg == x64::d) {
+		code = { 0x49, 0xC7, 0xC0 };
+		a_reg = "r8";
+	}
+	else if (reg == x64::e) {
+		code = { 0x49, 0xC7, 0xC1 };
+		a_reg = "r9";
+	}
+	vm.mp.fill(*this, { code[0], code[1], code[2] }); position += 3;
+	std::memcpy((vm.mp.mem + ptr + position), &value, sizeof value);
+	position += sizeof value;
+	vm.debug_push(fmt::format(out_string, a_reg, std::to_string(value)));
+	vm.debug_endline();
+}
+
+void Label::print(VM & vm) {
+	printf("%s\n", debug.data());
+}
+
+void Label::getMachineCode(VM& vm, std::string& mc) {
+	for (int i = ptr; i < ptr + position; ++i) {
+		mc += int(vm.mp.mem[i]);
 	}
 }
-void CodeBlock::Call(const std::string & fn, std::pair<std::string, std::variant<Label, _reg, nullobj>> ret, Label & label, std::vector<std::pair<std::string, std::variant<size_t, Label, _reg, nullobj>>> args) {
-	std::vector<VirtualReg*> r;
-	VirtualReg* t;
-	for (auto a : args) {
-		if (std::holds_alternative<_reg>(a.second)) {
-			auto str = std::get<_reg>(a.second);
-			t = registers.at(str.val).get();
-			r.push_back(t);
+
+std::string class_def::get_def(VM& vm, const std::vector<std::string>& template_vars) {
+	if (is_template)
+		return "";
+	if (name.size() == 0)
+		return "";
+	if (name == "$")
+		return "";
+	std::string out = "";
+	//out += add_types(vm);
+	if ((int)basic < 50)
+		return out;
+	if (is_enum)
+		out += "typedef enum _" + name + "{";
+	else
+		out += "typedef struct _" + name + "{";
+	if (is_enum) {
+		for (auto v : variables) {
+			auto i = std::get<uint64_t>(v.second.value);
+			out += name + "$" + v.first + " = " + std::to_string(i) + ',';
 		}
-		else if (std::holds_alternative<Label>(a.second)) {
-			auto str = std::get<Label>(a.second);
-			auto tt = std::make_shared<VirtualReg>(order++, registers.size() + 1, a.first, str);
-			registers.push_back(std::move(tt));
-			t = registers.back().get();
-			r.push_back(t);
-		}
-		else if (std::holds_alternative<size_t>(a.second)) {
-			auto str = std::get<size_t>(a.second);
-			auto tt = std::make_shared<VirtualReg>(order++, registers.size() + 1, a.first, str);
-			registers.push_back(std::move(tt));
-			t = registers.back().get();
-			r.push_back(t);
-		}
+		out += "}" + name + ";";
 	}
-	auto tt = std::make_shared<VirtualReg>(order++, registers.size() + 1, fn, label, r);
-	if (std::holds_alternative<_reg>(ret.second)) {
-		auto str = std::get<_reg>(ret.second);
-		t = registers.at(str.val).get();
-		tt->ret = t;
+	else {
+		out += get_variables_def(vm, template_vars);
+		out += "}" + name + ";";
 	}
-	else if (std::holds_alternative<Label>(ret.second)) {
-		auto str = std::get<Label>(ret.second);
-		auto t1 = std::make_shared<VirtualReg>(order++, registers.size() + 1, ret.first, str);
-		gets.push_back(std::move(t1));
-		t = gets.back().get();
-		tt->ret = t;
-	}
-	registers.push_back(std::move(tt));
+	return out;
 }
-void CodeBlock::Print() {
-	std::cout << '\n';
-	//if (expects_return) {
-		//registers.back()->id = 0;
-	//}
-	all.resize(registers.size() + gets.size());
-	for (auto& r : registers)
-		all[r->order] = { 1, r.get() };
-	for (auto& r : gets)
-		all[r->order] = { 0, r.get() };
-	for (int i = 0; i < all.size(); ++i) {
-		if (all[i].first) {
-			std::string depends_on = "";
-			std::string ret = "";
-			if (all[i].second->ret)
-				ret += all[i].second->ret->name + " = ";
-			for (auto d : all[i].second->depends_on)
-				depends_on += d->name + "(reg_" + std::to_string(d->id) + ")" + " ";
-			if (all[i].second->type == SymbolType::Plus) {
-				std::cout << ret << "reg_" << all[i].second->id << " = " << all[i-1].second->id << " + " << all[i].second->name << " " << depends_on << " " << '\n';
-			} 
-				std::cout << ret << "reg_" << all[i].second->id << " = " << all[i].second->name << " " << depends_on << " " << '\n';
+std::string class_def::add_types(VM& vm) {
+	std::string out = "";
+	for (auto v : variables) {
+		if (v.second.type == BasicType::var || v.second.type == BasicType::str) {
+			auto c = vm.FindClass(v.second.GetType());
+			out += c->get_def(vm);
+		}
+	}
+	if (auto p = GetParentClass(vm))
+		out += p->add_types(vm);
+	return out;
+}
+tsl::ordered_map<std::string, Type> class_def::get_variables(VM& vm, const std::vector<std::string>& template_vars) {
+	tsl::ordered_map<std::string, Type> vec;// = variables;
+	if (auto p = GetParentClass(vm)) {
+		auto v = p->get_variables(vm);
+		vec.insert(v.begin(), v.end());
+	}
+	vec.insert(variables.begin(), variables.end());
+	return vec;
+}
+std::string class_def::get_variables_def(VM& vm, const std::vector<std::string>& template_vars) {
+	std::string out = "";
+	tsl::ordered_map<std::string, Type> vars;
+	if (auto p = GetParentClass(vm))
+		vars = p->get_variables(vm);
+	else
+		vars = variables;
+
+	for (auto v : vars) {
+		if (v.second.type == BasicType::var) {
+			/*if (template_vars.size() > 0) {
+				out += template_vars.front() + "* ";
+			}
+			else {*/
+				if (v.second.isNativeArray)
+					out += v.second.GetComplexType() + "* ";
+				else
+					out += v.second.GetComplexType() + " ";
+			//}
 		}
 		else {
-			std::string depends_on = "";
-			for (auto d : all[i].second->dependant_on) {
-				if (d->type == SymbolType::Plus) {
-					if (std::holds_alternative<size_t>(d->value))
-						depends_on += d->name + " + ";
-					else
-						depends_on += d->name + " + (reg_" + std::to_string(d->id) + ")" + " ";
-				}
-				else {
-					depends_on += d->name + "(reg_" + std::to_string(d->id) + ")" + " ";
-
-				}
-			}
-			//std::cout << "reg_" << all[i].second->id << " = " << all[i].second->name << " " << depends_on << " " << '\n';
-			if (i == all.size() - 1) { //if last statement is a get, then return it
-				if (all[i].second->type == SymbolType::NA) {
-					std::cout << "reg_0" << " = " << " " << depends_on << all.back().second->name << "(reg_" + std::to_string(all.back().second->id) + ")" << " " << '\n';
-				}
-				else if (all[i].second->type == SymbolType::UnsignedInt) {
-					std::cout << "reg_0" << " = " << depends_on << all.back().second->name << " " << '\n';
-				}
-			}
+			std::string temp = "";
+			if (v.second.isNativeArray)
+				temp = "*";
+			out += v.second.GetComplexType() + temp + " ";
 		}
+		out += v.first + ";\n";
 	}
-}
-//expects return so move last reg into reg_0
-void CodeBlock::Ret() {
-	expects_return = true;
-	//std::vector<VirtualReg*> args = { registers.back().get() };
-	//auto t1 = std::make_shared<VirtualReg>(order++, registers.size() + 1, "ret", nullobj(), args);
-	//registers.push_back(std::move(t1));
+	return out;
 }
 
-void CodeBlock::Optimize() {
-	for (int i = 0; i < registers.size(); ++i) {
-		auto& r = registers[i];
-		if (r->dependant_on.size() == 0) {
-			//decrement order for all things after this
-			for (auto& rr : registers)
-				if (rr->order > r->order) {
-					rr->order--;
-					rr->id--;
-				}
-			for (auto& rr : gets)
-				if (rr->order > r->order){
-					rr->order--;
-					rr->id--;
-				}
+class_def* class_def::GetParentClass(VM& vm) {
+	if (extends.size() > 0) {
+		if (auto c = vm.FindClass(extends)) {
+			return c;
 		}
+		printf("Unable to extend class %s. Not found.\n", extends.data());
 	}
-	if (expects_return) {
-		registers.back()->id = 0;
-	}
-	registers.erase(std::remove_if(registers.begin(), registers.end(),	[](std::shared_ptr<VirtualReg> x) {return x->dependant_on.size() == 0 && x->id != 0; }), registers.end());
-	std::cout << '\n';
-	all.resize(registers.size() + gets.size());
-	for (auto& r : registers)
-		all[r->order] = { 1, r.get() };
-	for (auto& r : gets)
-		all[r->order] = { 0, r.get() };
-	for (int i = 0; i < all.size(); ++i) {
-		if (all[i].first) {
-			std::string depends_on = "";
-			std::string ret = "";
-			if (all[i].second->ret)
-				ret += all[i].second->ret->name + " = ";
-			for (auto d : all[i].second->depends_on)
-				depends_on += d->name + "(reg_" + std::to_string(d->id) + ")" + " ";
-			std::cout << ret << "reg_" << all[i].second->id << " = " << all[i].second->name << " " << depends_on << " " << '\n';
-		}
-		else {
-			if (i == all.size() - 1) { //if last statement is a get, then return it
-				std::string depends_on = "";
-				std::cout << "reg_0" << " = " << all.back().second->name << " " << depends_on << " " << '\n';
+	return nullptr;
+}
 
+Type* class_def::FindVariable(VM& vm, const std::string& c, class_def* parent) {
+	auto got = variables.find(c);
+	if (got != variables.end()) {
+		parent = this;
+		return (Type*)&got->second;
+	}
+	if (auto p = GetParentClass(vm))
+		return p->FindVariable(vm, c, parent);
+	return nullptr;
+}
+
+Func* class_def::FindFunction(VM& vm, const std::string& c, class_def* parent) {
+	auto got = functions.find(c);
+	if (got != functions.end()) {
+		parent = this;
+		return &got->second;
+	}
+	if (auto p = GetParentClass(vm))
+		return p->FindFunction(vm, c, parent);
+	return nullptr;
+}
+struct TEMP_OUT {
+	std::string args = "";
+	std::string names = "";
+	std::string types = "";
+	std::string mangled = "";
+};
+
+TEMP_OUT Mangle2(DemangledStruct& demangled) {
+	auto type_check = [](const std::string& str) {
+		if (!Helper::BasicTypeCheck(str))
+			return "*";
+		else
+			return "";
+	};
+	TEMP_OUT out;
+	out.args = demangled.name + "$(";
+	out.names = "(";
+	out.types = "(";
+	out.mangled = "_" + demangled.type.type_name + "_" + demangled.name + "_";
+	for (int i = 0; i < demangled.args.size(); ++i) {
+		out.args += "o" + std::to_string(i) + ":" + demangled.args[i]->name + ",";
+		out.names += "o" + std::to_string(i) + ",";
+		out.types += demangled.args[i]->name + type_check(demangled.args[i]->name) + ",";
+		out.mangled += demangled.args[i]->name + "_";
+	}
+	if (demangled.args.size() > 0) {
+		out.args.pop_back();
+		out.names.pop_back();
+		out.types.pop_back();
+		out.mangled.pop_back();
+	}
+	//mangled += "):";
+	out.args += "):" + demangled.type.type_name + ":";
+	out.names += ")";
+	out.types += ")";
+	out.args += demangled.body;
+	out.mangled += "$";
+	return out;
+}
+void class_def::AddFunction(VM& vm, Func func) {
+	functions[func.name] = func;
+	auto& vptr = vm.label(func.func->name, std::vector<uint8_t>{ 0 });
+	auto str = Helper::Demangle(func.func->name, {}, "");
+	auto t = func.func->GetType();
+	auto t2 = Helper::ModifyMangled(func.func->name, str);
+	vptr.def = "extern " + t.GetComplexType() + " " + t2.first  + "(" + t2.second + ");" + t2.first + ";" + std::to_string(vptr.ptr) + "\n";
+	//vptr.def = t.GetComplexType() + "(*" + t2.first + ")(" + t2.second + ") = (void*)0x0;" + t2.first + ";" + std::to_string(vptr.ptr) + "\n"; //possibly use libName.ptr
+	if (extends.size() > 0 && name != func.name) {
+		//Go all the way up and find what classes have this func
+		std::vector<Func> classes;
+		if (auto p = GetParentClass(vm)) {
+			auto got_func = p->functions.find(func.name);
+			if (got_func != p->functions.end()) {
+				classes.push_back(got_func->second);
 			}
 		}
+		//std::string code = "switch\n";
+		/*
+		switch(v)
+>  case 0
+>   return update()
+>  case 1
+>   return update2()
+> return 1
+*/
+//func only needs to be created in most furthest parent
+		if (classes.size() > 0) {
+			auto back = classes.back();
+			auto str = Helper::Demangle(back.func->name, {}, "");
+			auto test = Mangle2(str);
+
+			std::string code = test.args + "\n switch(o0.VTABLE)\n";
+			code += "  case 0\n";
+			code += "   return _u8_talk_Animal(o0)\n";
+			code += "  case 1\n";
+			code += "   return _u8_talk_Duck(o0)\n";
+			code += "  default\n";
+			code += "   return 31\n";
+			code += "\n";
+			auto& vptr = vm.label(test.mangled, std::vector<uint8_t>{ 0 });
+			auto v = back.func->GetType();
+			auto t = Helper::ModifyMangled(back.func->name, str);
+			//vptr.def = v.GetComplexType() + "(*" + t.first + "$)(" + t.second + ") = (void*)0x0;" + t.first + "$;" + std::to_string(vptr.ptr) + "\n"; //possibly use libName.ptr
+			vptr.def = "extern " + v.GetComplexType() + " " + test.mangled + test.types + ";" + test.mangled + ";" + std::to_string(vptr.ptr) + "\n";
+			//vm.labels.emplace("_u8_talk_Animal_", vptr);
+			//functions[func.name].func->ptr = vptr;
+			Parser::queueMachineCode(vm, code);
+		}
 	}
+		//SetVirtual(vm, func.name);
+}
+#include "parser.h"
+void class_def::SetVirtual(VM& vm, const std::string& str) {
+	//start with parent and start adding functions to switch, only if parent has same function declared
+	/*if (auto p = GetParentClass(vm))
+		p->SetVirtual(vm, str);
+	auto got_func = functions.find(str);
+	if (got_func != functions.end()) {
+		got_func->second.is_virtual = true;
+		std::string virt_func = "";
+		void (*Base_Vtable[])() = { &Base_Update, &Base_Draw, &Base_ToString };
+		//Create a virtual function for this function and set the funtion to call 
+		FunctionToken func;
+		//func.type = { BasicType::var, "void (*Base_Vtable[])()" };
+		std::string code = "switch\n";
+		//for every child class, add its function to the switch
+		for (auto f : functions) {
+			code += "case " + function_id + ":" + "return " + function_name;
+		}
+		func.type = got_func->second.func->GetType();
+		func.symbols.push_back({ SymbolType::Function, "test_func" });
+		func.symbols.push_back({SymbolType::Function, "test_func"});
+		Parser::getMachineCode();
+		auto body = vm.label("$" + got_func->second.func->name, std::vector<uint8_t>{ 0 });
+		auto vptr = vm.label("$" + got_func->second.func->name, std::vector<uint8_t>{ 0 }).ptr;
+		got_func->second.func->ptr = vptr;
+	}*/
+}
+
+bool class_def::HasParent(VM& vm, const std::string& p) {
+	if (auto p2 = GetParentClass(vm)) {
+		if (p2->name == p)
+			return true;
+		return p2->HasParent(vm, p);
+	}
+	return false;
+}
+
+class_def* class_def::BuildClassFromTemplate(VM& vm, const std::string& str) {
+	auto _class = vm.FindClass(str);
+	auto _newclass = *this;
+	_newclass.name = name + '$' + str;
+	for (auto vv : _newclass.variables) {
+		auto& v = _newclass.variables[vv.first];
+		if (v.type == BasicType::template_type) {
+			v.type = _class->basic;
+			v.type_name = str;
+		}
+
+		
+	}
+	vm.class_defs[name + '$' + str] = std::move(_newclass);
+	return &vm.class_defs[name + '$' + str];
 }

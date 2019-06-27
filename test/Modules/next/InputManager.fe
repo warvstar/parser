@@ -1,0 +1,2 @@
+class InputManager
+ keys:u8[u64[]]

@@ -1,0 +1,32 @@
+class vec
+ size:u64
+ capacity:u64
+ data:$0*
+ resize(v:u8):void:
+  size = v
+  data = allocc(v*sizeof($0))
+
+
+a = [1,2,1,1]
+
+//class TClas
+// v:vec<u8>
+
+a = vec<u8>()
+
+func:
+ a = vec<u8>() //a.data = allocc(4*sizeof($0))
+ a.resize(4)
+ a.data[0] = 1
+ a.data[1] = 2
+ a.data[2] = 1
+ a.data[3] = 1
+ 1
+
+//these ones convert to the above
+//a = [1,2,1,1]
+//a = u8[1,2,1,1]
+
+//create a constructor that takes an int to reserve data
+//for (val in some_vec)
+//converts to a regular for, class just has to have a 

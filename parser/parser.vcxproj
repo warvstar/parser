@@ -23,34 +23,34 @@
     <ProjectGuid>{3C9CB7A9-1290-48FF-8E11-EA5EDAF18015}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>parser</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -88,12 +88,12 @@
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_WIN32_WINNT=0x0A00;USE_STANDALONE_ASIO;BOOST_ASIO_HAS_STD_CHRONO;ASIO_STANDALONE;_CRT_SECURE_NO_WARNINGS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AssemblerOutput>AssemblyAndMachineCode</AssemblerOutput>
-      <AdditionalIncludeDirectories>C:\Users\warvs\source\repos\parser\parser\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Engine\Includes;C:\Program Files\OpenSSL-Win64\include;C:\Engine\Simple-WebSocket-Server;C:\Users\warvs\source\repos\parser\parser\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -106,12 +106,12 @@
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_WIN32_WINNT=0x0A00;USE_STANDALONE_ASIO;BOOST_ASIO_HAS_STD_CHRONO;ASIO_STANDALONE;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AssemblerOutput>AssemblyAndMachineCode</AssemblerOutput>
-      <AdditionalIncludeDirectories>C:\Users\warvs\source\repos\parser\parser\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Engine\Includes;C:\Program Files\OpenSSL-Win64\include;C:\Engine\Simple-WebSocket-Server;C:\Users\warvs\source\repos\parser\parser\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -129,12 +129,12 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_WIN32_WINNT=0x0A00;USE_STANDALONE_ASIO;BOOST_ASIO_HAS_STD_CHRONO;ASIO_STANDALONE;_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AssemblerOutput>AssemblyAndMachineCode</AssemblerOutput>
-      <AdditionalIncludeDirectories>C:\Users\warvs\source\repos\parser\parser\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Engine\Includes;C:\Program Files\OpenSSL-Win64\include;C:\Engine\Simple-WebSocket-Server;C:\Users\warvs\source\repos\parser\parser\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -151,12 +151,12 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_SILENCE_ALL_CXX17_DEPRECATION_WARNINGS;_WIN32_WINNT=0x0A00;USE_STANDALONE_ASIO;BOOST_ASIO_HAS_STD_CHRONO;ASIO_STANDALONE;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <AssemblerOutput>AssemblyAndMachineCode</AssemblerOutput>
-      <AdditionalIncludeDirectories>C:\Users\warvs\source\repos\parser\parser\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Engine\Includes;C:\Program Files\OpenSSL-Win64\include;C:\Engine\Simple-WebSocket-Server;C:\Users\warvs\source\repos\parser\parser\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -166,19 +166,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AotTest.cpp" />
+    <ClCompile Include="cpp.c" />
     <ClCompile Include="format.cpp" />
+    <ClCompile Include="gen.c" />
     <ClCompile Include="helper.cpp" />
-    <ClCompile Include="InterpreterTest.cpp" />
+    <ClCompile Include="int.c" />
     <ClCompile Include="JitTest.cpp" />
-    <ClCompile Include="LuajitTest.cpp" />
-    <ClCompile Include="LuaTest.cpp" />
+    <ClCompile Include="mem2.c" />
     <ClCompile Include="mem.cpp" />
-    <ClCompile Include="ParserTest.cpp" />
+    <ClCompile Include="ncc.c" />
     <ClCompile Include="posix.cpp" />
+    <ClCompile Include="reg.c" />
+    <ClCompile Include="tok.c" />
     <ClCompile Include="Tokens.cpp" />
+    <ClCompile Include="VariableToken.cpp" />
     <ClCompile Include="vm.cpp" />
+    <ClCompile Include="x64.c" />
     <ClInclude Include="any_lite.h" />
+    <ClInclude Include="archive.h" />
+    <ClInclude Include="basic_types.h" />
     <ClInclude Include="bitmask.hpp" />
     <ClInclude Include="exe.h" />
     <ClInclude Include="helper.h">
@@ -192,6 +198,7 @@
     <ClInclude Include="jit.h" />
     <ClInclude Include="mem.h" />
     <ClInclude Include="mmap.h" />
+    <ClInclude Include="ncc.h" />
     <ClInclude Include="ordered_hash.h" />
     <ClInclude Include="ordered_map.h" />
     <ClInclude Include="parser.h" />
@@ -201,19 +208,30 @@
     <ClInclude Include="vm.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\test\Tests\animal.fe" />
+    <None Include="..\test\Tests\funcs.fe" />
+    <None Include="..\test\Tests\map.fe" />
+    <None Include="any.fe" />
     <None Include="asm.fe" />
+    <None Include="for.fe" />
     <None Include="gl.fe" />
+    <None Include="input.fe" />
     <None Include="main.fe" />
     <None Include="animal.fe" />
+    <None Include="poly.fe" />
     <None Include="simple_add_var.fe" />
     <None Include="simple_class.fe" />
     <None Include="simple_main.fe" />
+    <None Include="template.fe" />
     <None Include="test.fe" />
     <None Include="test_0.fe" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="..\test\Tests\string.txt" />
+    <Text Include="..\test\Tests\vector.txt" />
     <Text Include="Readme.txt" />
     <Text Include="Text.txt" />
+    <Text Include="Todo.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

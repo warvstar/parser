@@ -1,0 +1,6 @@
+class ResMan
+ objects:u8[] = u8[1,2]
+
+class ResMan
+ objects:vec<u8>
+

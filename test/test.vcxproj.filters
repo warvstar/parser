@@ -20,11 +20,21 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="sol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="lua.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Tests\funcs.fe" />
+    <None Include="Tests\animal.fe" />
+    <None Include="Tests\map.fe" />
+    <None Include="Modules\Animal.fe" />
+    <None Include="Modules\Duck.fe" />
+    <None Include="Modules\Main.fe" />
+    <None Include="Modules\Object.fe" />
+    <None Include="Modules\ResMan.fe" />
+    <None Include="Modules\Vector.fe" />
+    <None Include="Modules\IO.fe" />
+    <None Include="Modules\next\InputManager.fe" />
   </ItemGroup>
 </Project>

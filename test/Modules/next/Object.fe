@@ -1,0 +1,4 @@
+class Object
+ name:str
+ Update:
+  print(".")

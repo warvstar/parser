@@ -16,6 +16,9 @@
     <Filter Include="Source Files\Tests">
       <UniqueIdentifier>{d15a7776-c0fe-41f0-aed2-9cd587389e60}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\EmbeddedCCompiler">
+      <UniqueIdentifier>{7cb5f55d-2983-4f28-904d-dd8e151d79d3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="parser.cpp">
@@ -30,22 +33,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ParserTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="InterpreterTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="JitTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LuaTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LuajitTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AotTest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="helper.cpp">
@@ -66,23 +54,35 @@
     <ClCompile Include="mem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="VariableToken.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="cpp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gen.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="int.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ncc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="x64.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="tok.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="reg.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mem2.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="test.fe">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="gl.fe">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="main.fe">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="animal.fe">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="asm.fe">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="simple_class.fe">
       <Filter>Source Files\Tests</Filter>
     </None>
@@ -93,6 +93,45 @@
       <Filter>Source Files\Tests</Filter>
     </None>
     <None Include="test_0.fe">
+      <Filter>Source Files\Tests</Filter>
+    </None>
+    <None Include="template.fe">
+      <Filter>Source Files\Tests</Filter>
+    </None>
+    <None Include="any.fe">
+      <Filter>Source Files\Tests</Filter>
+    </None>
+    <None Include="for.fe">
+      <Filter>Source Files\Tests</Filter>
+    </None>
+    <None Include="input.fe">
+      <Filter>Source Files\Tests</Filter>
+    </None>
+    <None Include="..\test\Tests\map.fe">
+      <Filter>Source Files\Tests</Filter>
+    </None>
+    <None Include="..\test\Tests\animal.fe">
+      <Filter>Source Files\Tests</Filter>
+    </None>
+    <None Include="..\test\Tests\funcs.fe">
+      <Filter>Source Files\Tests</Filter>
+    </None>
+    <None Include="poly.fe">
+      <Filter>Source Files\Tests</Filter>
+    </None>
+    <None Include="animal.fe">
+      <Filter>Source Files\Tests</Filter>
+    </None>
+    <None Include="asm.fe">
+      <Filter>Source Files\Tests</Filter>
+    </None>
+    <None Include="gl.fe">
+      <Filter>Source Files\Tests</Filter>
+    </None>
+    <None Include="test.fe">
+      <Filter>Source Files\Tests</Filter>
+    </None>
+    <None Include="main.fe">
       <Filter>Source Files\Tests</Filter>
     </None>
   </ItemGroup>
@@ -142,6 +181,15 @@
     <ClInclude Include="any_lite.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="basic_types.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ncc.h">
+      <Filter>Source Files\EmbeddedCCompiler</Filter>
+    </ClInclude>
+    <ClInclude Include="archive.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Text Include="Readme.txt">
@@ -149,6 +197,13 @@
     </Text>
     <Text Include="Text.txt">
       <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="Todo.txt" />
+    <Text Include="..\test\Tests\vector.txt">
+      <Filter>Source Files\Tests</Filter>
+    </Text>
+    <Text Include="..\test\Tests\string.txt">
+      <Filter>Source Files\Tests</Filter>
     </Text>
   </ItemGroup>
 </Project>

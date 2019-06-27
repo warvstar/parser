@@ -1,8 +1,31 @@
 class Animal
- age : int = 1
+ age:u8 = 1
  name="str"
  bark:: print("woof")//function without arguments and equivelant to bark:void:
  eat(what:str):void: //function with arugments
   print(@name, "ate", what)
 
 export Animal
+
+
+class Animal
+ age:u8 = 1
+ bark:
+  1
+ eat(what:string):
+  what
+
+
+Animal():Animal:
+ age = age + 2
+
+a = Animal()
+a.bark()
+Animal$bark(T$:Animal):u8:
+ T$.age
+
+Animal$eat(T$:Animal, what:string):
+ printf(what.data)
+
+a.bark()
+a.age

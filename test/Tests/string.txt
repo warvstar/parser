@@ -1,0 +1,99 @@
+clib = ffi("msvcrt")
+sleep(u64):void = clib.get("_sleep")
+time(sleep(100))
+memcpy(u64,u64,u64):void = clib.get("memcpy")
+print(string,u64):void = clib.get("printf")
+
+fib(num:u64):u64:
+  if (num <= 1)
+   return 1
+  return fib(num - 1) + fib(num - 2);
+
+
+time(fib(20))
+
+
+string():string:
+ s:string = allocc(24)
+ s.size = 0
+ s.capacity = 2
+ s.data = allocc(2)
+ s
+
+s = string()
+b = string()
+
+string$reserve(s:string, val:u64):void:
+ if (val > s.capacity)
+  s.capacity = val
+  temp:u64 = s.data
+  s.data = allocc(s.capacity)
+  memcpy(s.data, temp, val)
+ return
+
+string$getsize(s:string):u64:
+ s.size
+
+string$push(s:string, val:u8):void:
+ if (s.size >= s.capacity)
+  s.reserve(s.size + 4)
+ s.data[s.size++] = val
+
+s.push('a')
+s.push('b')
+s.push('c')
+s.push('d')
+b.push('e')
+b.push('f')
+string$append(s:string, b:string):void:
+ if (s.size + b.size > s.capacity)
+  s.reserve(s.size + b.size)
+ tmp:u64 = b.size + s.size
+ memcpy(s.data+s.size, b.data, b.size)
+ s.size = tmp 
+ s.data[s.size] = '\0'
+
+
+s.append(b)
+s
+
+b.push('e')
+b.push('f')
+
+s.append(b)
+s
+s.append(b)
+s.append(b)
+s
+
+vector$each(v:vector, f:function)
+ u64 i = 0
+ while (i < v.size)
+  f(v.data[i++])
+
+vector$print(v:vector)
+ v.each([e:i8]{ print("%d,", e) })
+
+someVar = 1
+v.each([e:i8, index, someVar]{ someVar+=e; printLn(e) })
+printLn(someVar)
+
+
+string$printLn(s:string)
+ printLn(s)
+
+
+string$set(s:string, i:u64, c:i8):void:
+ if (i < s.size)
+  s.data[i] = c
+ return
+
+string$push(s:string, val:u8):void:
+ s.data[s.size++] = val
+
+s = string()
+s
+s.data[0] = 'a'
+s.data[1] = 'b'
+s
+
